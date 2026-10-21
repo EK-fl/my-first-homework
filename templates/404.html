@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Страница не найдена — {{ brand_name }}{% endblock %}
+{% block meta_description %}Такой страницы нет на сайте {{ brand_name }}.{% endblock %}
+
+{% block content %}
+<div class="container notfound-page">
+  <p class="notfound-code" aria-hidden="true">404</p>
+  <h1 class="section-title">Кажется, этот крестик заблудился</h1>
+  <p class="notfound-text">
+    Такой страницы не существует — возможно, ссылка устарела или в адресе опечатка.
+    Но настоящие схемы никуда не делись: загляните в каталог.
+  </p>
+  <div class="notfound-actions">
+    <a href="{{ url_for('index') }}#catalog" class="btn btn-primary btn-lg">В каталог</a>
+    <a href="{{ url_for('index') }}" class="btn btn-outline">На главную</a>
+  </div>
+</div>
+{% endblock %}

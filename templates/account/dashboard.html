@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Личный кабинет — {{ brand_name }}{% endblock %}
+
+{% block content %}
+
+<section class="account-page">
+  <div class="container">
+
+    <header class="account-head reveal">
+      <h1 class="account-title">Здравствуйте, {{ current_user.name or 'рукодельница' }}!</h1>
+      <p class="account-lead">
+        Публичное имя: <strong>{{ current_user.display_name }}</strong>
+        <span class="account-dot">·</span>
+        <a href="{{ url_for('users.settings') }}">изменить</a>
+      </p>
+      {% if not current_user.email_confirmed %}
+        <p class="account-alert">
+          Почта пока не подтверждена. Чтобы оставлять отзывы, подтвердите её в
+          <a href="{{ url_for('users.settings') }}">настройках</a>.
+        </p>
+      {% endif %}
+    </header>
+
+    {% include "account/_nav.html" %}
+
+    <div class="account-grid">
+
+      <a class="account-tile reveal" href="{{ url_for('users.library') }}">
+        <span class="account-tile-count">{{ library | length }}</span>
+        <span class="account-tile-label">Моих схем</span>
+        <span class="account-tile-hint">В личной библиотеке с правом скачивания</span>
+      </a>
+
+      <a class="account-tile reveal" href="{{ url_for('users.orders') }}">
+        <span class="account-tile-count">{{ orders | length }}</span>
+        <span class="account-tile-label">Моих заказов</span>
+        <span class="account-tile-hint">История покупок</span>
+      </a>
+
+      <a class="account-tile reveal" href="{{ url_for('users.projects') }}">
+        <span class="account-tile-count">{{ projects | length }}</span>
+        <span class="account-tile-label">Моих отшивов</span>
+        <span class="account-tile-hint">Готовые работы и их статус</span>
+      </a>
+
+      <a class="account-tile reveal" href="{{ url_for('users.reviews') }}">
+        <span class="account-tile-count">{{ reviews | length }}</span>
+        <span class="account-tile-label">Моих отзывов</span>
+        <span class="account-tile-hint">Отзывы и их проверка</span>
+      </a>
+
+    </div>
+
+    <div class="account-quick reveal">
+      <h2 class="account-subtitle">Быстрые действия</h2>
+      <div class="account-actions">
+        <a href="{{ url_for('users.write_review') }}" class="btn btn-primary">Написать отзыв</a>
+        <a href="{{ url_for('users.projects') }}#share" class="btn btn-outline">Поделиться отшивом</a>
+        <a href="{{ url_for('index') }}#catalog" class="btn btn-ghost">В каталог схем</a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+{% endblock %}

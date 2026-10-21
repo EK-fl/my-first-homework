@@ -1,0 +1,68 @@
+{% extends "admin/base.html" %}
+{% block title %}Резервные копии{% endblock %}
+
+{% block content %}
+
+<div class="admin-page-head">
+  <div>
+    <h1 class="admin-page-title">Резервные копии</h1>
+    <p class="admin-page-sub">
+      Копия базы данных — это файл, в котором сохранён весь каталог:
+      схемы, категории, настройки. Если что-то случится, из копии можно
+      всё восстановить.
+    </p>
+  </div>
+
+  <form method="post" action="{{ url_for('admin.backups') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <button type="submit" class="admin-btn admin-btn-primary admin-btn-lg">
+      Создать копию сейчас
+    </button>
+  </form>
+</div>
+
+<section class="admin-card">
+  <h2 class="admin-card-title">Что важно знать</h2>
+  <ul class="admin-tips">
+    <li>Копия создаётся автоматически перед важными изменениями:
+        переносом данных и сменой пароля администратора.</li>
+    <li>Файлы копий лежат в папке <code>data/backups/</code> рядом с проектом.</li>
+    <li>Чтобы сохранить копию надёжно, скопируйте файл на флешку
+        или в облако — на компьютере он может пропасть вместе с ним.</li>
+    <li>Схемы никогда не удаляются безвозвратно: у них есть мягкое удаление
+        с возможностью восстановления.</li>
+  </ul>
+</section>
+
+<section class="admin-card">
+  <h2 class="admin-card-title">Созданные копии</h2>
+
+  {% if not backups %}
+    <p class="admin-empty">
+      Копий пока нет. Нажмите «Создать копию сейчас» — займёт секунду.
+    </p>
+  {% else %}
+    <div class="admin-table-wrap">
+      <table class="admin-table admin-table-compact">
+        <thead>
+          <tr>
+            <th>Файл</th>
+            <th>Дата</th>
+            <th>Размер</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for backup in backups %}
+          <tr>
+            <td data-label="Файл" class="admin-cell-mono">{{ backup.name }}</td>
+            <td data-label="Дата">{{ backup.created }}</td>
+            <td data-label="Размер">{{ backup.size_kb }} КБ</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+</section>
+
+{% endblock %}

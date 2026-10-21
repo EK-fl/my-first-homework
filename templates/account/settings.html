@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block title %}Настройки профиля — {{ brand_name }}{% endblock %}
+
+{% block content %}
+
+<section class="account-page">
+  <div class="container account-narrow">
+
+    <header class="account-head reveal">
+      <h1 class="account-title">Настройки профиля</h1>
+      <p class="account-lead">Имя, пароль и то, как вас видят другие.</p>
+    </header>
+
+    {% include "account/_nav.html" %}
+
+    {% if note %}
+      <div class="account-card reveal">
+        <p class="account-note">{{ note.text }}</p>
+        {% if note.dev_mode and note.link %}
+          <div class="dev-link-block">
+            <p class="dev-link-label">Ссылка для подтверждения почты (режим разработки):</p>
+            <a class="dev-link" href="{{ note.link }}">{{ note.link }}</a>
+          </div>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <!-- ==================== ПРОФИЛЬ ==================== -->
+    <form method="post" class="account-form account-card reveal"
+          action="{{ url_for('users.settings') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input type="hidden" name="action" value="profile">
+
+      <h2 class="account-subtitle">Профиль</h2>
+
+      <div class="form-field">
+        <label for="name">Имя</label>
+        <input type="text" id="name" name="name" value="{{ user.name }}"
+               {% if errors.name %}aria-invalid="true"{% endif %}>
+        {% if errors.name %}<p class="form-error">{{ errors.name }}</p>{% endif %}
+      </div>
+
+      <div class="form-field">
+        <label for="nickname">Никнейм</label>
+        <input type="text" id="nickname" name="nickname" value="{{ user.nickname }}"
+               {% if errors.nickname %}aria-invalid="true"{% endif %}>
+        {% if errors.nickname %}<p class="form-error">{{ errors.nickname }}</p>{% endif %}
+      </div>
+
+      <div class="form-field">
+        <label>Как показывать ваше имя публично</label>
+        <div class="form-radio-group">
+          <label class="form-radio">
+            <input type="radio" name="display_name_mode" value="first"
+                   {% if user.display_name_mode == 'first' and not user.display_name_custom %}checked{% endif %}>
+            <span>Только имя</span>
+          </label>
+          <label class="form-radio">
+            <input type="radio" name="display_name_mode" value="nickname"
+                   {% if user.display_name_mode == 'nickname' %}checked{% endif %}>
+            <span>Никнейм{% if not user.nickname %} (сначала укажите никнейм){% endif %}</span>
+          </label>
+          <label class="form-radio">
+            <input type="radio" name="display_name_mode" value="full"
+                   {% if user.display_name_mode == 'full' %}checked{% endif %}>
+            <span>Имя и фамилия</span>
+          </label>
+          <label class="form-radio">
+            <input type="radio" name="display_name_mode" value="custom"
+                   {% if user.display_name_custom %}checked{% endif %}>
+            <span>Свой вариант:</span>
+          </label>
+        </div>
+        <input type="text" id="display_name_custom" name="display_name_custom"
+               value="{{ user.display_name_custom }}"
+               placeholder="Например: Лена К."
+               {% if errors.display_name_custom %}aria-invalid="true"{% endif %}>
+        {% if errors.display_name_custom %}<p class="form-error">{{ errors.display_name_custom }}</p>{% endif %}
+        <p class="form-hint">Электронная почта никогда не показывается другим людям.</p>
+      </div>
+
+      <p class="form-hint">
+        Сейчас вас видят как: <strong>{{ user.display_name }}</strong>
+      </p>
+
+      <button type="submit" class="btn btn-primary account-submit">Сохранить профиль</button>
+    </form>
+
+    <!-- ==================== ПОЧТА ==================== -->
+    <section class="account-card reveal">
+      <h2 class="account-subtitle">Электронная почта</h2>
+      <p class="account-note">
+        {{ user.email }}
+        {% if user.email_confirmed %}
+          <span class="status-badge status-approved">Подтверждена</span>
+        {% else %}
+          <span class="status-badge status-pending">Не подтверждена</span>
+        {% endif %}
+      </p>
+
+      {% if not user.email_confirmed %}
+        <form method="post" action="{{ url_for('users.settings') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <input type="hidden" name="action" value="resend_confirmation">
+          <button type="submit" class="btn btn-outline">Отправить письмо повторно</button>
+        </form>
+      {% endif %}
+    </section>
+
+    <!-- ==================== ПАРОЛЬ ==================== -->
+    <form method="post" class="account-form account-card reveal"
+          action="{{ url_for('users.settings') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input type="hidden" name="action" value="password">
+
+      <h2 class="account-subtitle">Смена пароля</h2>
+
+      <div class="form-field">
+        <label for="current_password">Текущий пароль</label>
+        <input type="password" id="current_password" name="current_password"
+               autocomplete="current-password"
+               {% if errors.current_password %}aria-invalid="true"{% endif %}>
+        {% if errors.current_password %}<p class="form-error">{{ errors.current_password }}</p>{% endif %}
+      </div>
+
+      <div class="form-row">
+        <div class="form-field">
+          <label for="new_password">Новый пароль</label>
+          <input type="password" id="new_password" name="new_password"
+                 autocomplete="new-password"
+                 {% if errors.new_password %}aria-invalid="true"{% endif %}>
+          {% if errors.new_password %}<p class="form-error">{{ errors.new_password }}</p>{% endif %}
+        </div>
+        <div class="form-field">
+          <label for="new_password2">Повторите новый пароль</label>
+          <input type="password" id="new_password2" name="new_password2"
+                 autocomplete="new-password"
+                 {% if errors.new_password2 %}aria-invalid="true"{% endif %}>
+          {% if errors.new_password2 %}<p class="form-error">{{ errors.new_password2 }}</p>{% endif %}
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary account-submit">Сменить пароль</button>
+    </form>
+
+    <!-- ==================== УДАЛЕНИЕ АККАУНТА ==================== -->
+    <form method="post" class="account-card account-danger reveal"
+          action="{{ url_for('users.settings') }}"
+          onsubmit="return confirm('Удалить аккаунт? Это действие можно отменить, только написав нам.');">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input type="hidden" name="action" value="delete_account">
+      <h2 class="account-subtitle">Удаление аккаунта</h2>
+      <p class="account-note">
+        Аккаунт скрывается, данные сохраняются. Если передумаете — напишите нам.
+      </p>
+      <button type="submit" class="btn btn-danger">Удалить аккаунт</button>
+    </form>
+
+  </div>
+</section>
+
+{% endblock %}

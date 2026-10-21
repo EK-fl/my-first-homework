@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<!--
+  admin/not_configured.html — подсказка, если администратор ещё не заведён.
+  Показывается вместо страницы входа, чтобы не пришлось гадать,
+  почему пароль не подходит.
+-->
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Панель ещё не настроена — {{ brand_name }}</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body class="admin-body admin-login-body">
+
+<main class="admin-login-wrap">
+  <div class="admin-login-card">
+
+    <div class="admin-login-head">
+      <span class="admin-brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="30" height="30">
+          <path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6z" fill="currentColor"/>
+        </svg>
+      </span>
+      <h1 class="admin-login-title">Панель ещё не настроена</h1>
+      <p class="admin-login-sub">{{ brand_name }}</p>
+    </div>
+
+    <p class="admin-notice-text">
+      Для сайта пока не создан администратор. Это делается один раз —
+      прямо в терминале, где вы запускаете сайт.
+    </p>
+
+    <ol class="admin-steps">
+      <li>Откройте терминал в папке проекта.</li>
+      <li>Выполните команду <code>python setup_admin.py</code>.</li>
+      <li>Придумайте логин и пароль (пароль вводится скрытно).</li>
+      <li>Вернитесь на эту страницу и войдите.</li>
+    </ol>
+
+    <p class="admin-login-note">
+      Готового пароля в коде сайта нет — и не должно быть.
+      Так панель защищена от чужих входов.
+    </p>
+
+    <a href="{{ url_for('index') }}" class="admin-login-back">← Вернуться на сайт</a>
+
+  </div>
+</main>
+
+</body>
+</html>

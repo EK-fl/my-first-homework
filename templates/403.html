@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Доступ запрещён — {{ brand_name }}{% endblock %}
+
+{% block content %}
+<div class="container notfound-page">
+  <p class="notfound-code">403</p>
+  <h1 class="section-title">Действие не разрешено</h1>
+  <p class="notfound-text">
+    {% if reason %}{{ reason }}{% else %}
+    Запрос отклонён. Обновите страницу и попробуйте снова.
+    {% endif %}
+  </p>
+  <div class="notfound-actions">
+    <a href="{{ url_for('index') }}" class="btn btn-primary">На главную</a>
+  </div>
+</div>
+{% endblock %}

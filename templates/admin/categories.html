@@ -1,0 +1,134 @@
+{% extends "admin/base.html" %}
+{% block title %}Категории{% endblock %}
+
+{% block content %}
+
+<div class="admin-page-head">
+  <div>
+    <h1 class="admin-page-title">Категории</h1>
+    <p class="admin-page-sub">
+      Категории помогают покупателю выбрать схемы. Порядок здесь — это
+      порядок в фильтре каталога.
+    </p>
+  </div>
+</div>
+
+<!-- ==================== ДОБАВЛЕНИЕ ==================== -->
+<section class="admin-card">
+  <h2 class="admin-card-title">Добавить категорию</h2>
+  <form method="post" action="{{ url_for('admin.categories') }}" class="admin-inline-add">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <input type="hidden" name="action" value="add">
+    <label class="admin-visually-hidden" for="new-category">Название новой категории</label>
+    <input type="text" id="new-category" name="name" placeholder="Например: Животные" required>
+    <button type="submit" class="admin-btn admin-btn-primary">Добавить</button>
+  </form>
+</section>
+
+<!-- ==================== СПИСОК ==================== -->
+<section class="admin-card">
+  <h2 class="admin-card-title">Все категории</h2>
+
+  {% if not categories %}
+    <p class="admin-empty">
+      Категорий пока нет. Добавьте первую — например, «Животные» или «Цветы».
+    </p>
+  {% else %}
+    <ul class="admin-cat-list">
+      {% for c in categories %}
+      <li class="admin-cat-item {% if c.is_hidden %}is-hidden-cat{% endif %}">
+
+        <div class="admin-cat-main">
+          <!-- Переименование: форма отправляется по кнопке «Сохранить» -->
+          <form method="post" action="{{ url_for('admin.categories') }}" class="admin-cat-rename">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <input type="hidden" name="action" value="rename">
+            <input type="hidden" name="category_id" value="{{ c.id }}">
+            <label class="admin-visually-hidden" for="cat-name-{{ c.id }}">Название категории</label>
+            <input type="text" id="cat-name-{{ c.id }}" name="name" value="{{ c.name }}">
+            <button type="submit" class="admin-btn admin-btn-small admin-btn-outline">
+              Сохранить
+            </button>
+          </form>
+
+          <div class="admin-cat-meta">
+            <span class="admin-cat-count">
+              Схем: <strong>{{ counts.get(c.id, 0) }}</strong>
+            </span>
+            {% if c.is_hidden %}
+              <span class="admin-badge admin-badge-draft">Скрыта от покупателей</span>
+            {% else %}
+              <span class="admin-badge admin-badge-published">Видна покупателям</span>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="admin-cat-actions">
+          <!-- Порядок: кнопки «выше» и «ниже» -->
+          <form method="post" action="{{ url_for('admin.categories') }}" class="admin-inline-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <input type="hidden" name="action" value="move">
+            <input type="hidden" name="category_id" value="{{ c.id }}">
+            <input type="hidden" name="direction" value="up">
+            <button type="submit" class="admin-btn admin-btn-small admin-btn-ghost"
+                    title="Поднять выше" {% if loop.first %}disabled{% endif %}>↑ Выше</button>
+          </form>
+
+          <form method="post" action="{{ url_for('admin.categories') }}" class="admin-inline-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <input type="hidden" name="action" value="move">
+            <input type="hidden" name="category_id" value="{{ c.id }}">
+            <input type="hidden" name="direction" value="down">
+            <button type="submit" class="admin-btn admin-btn-small admin-btn-ghost"
+                    title="Опустить ниже" {% if loop.last %}disabled{% endif %}>↓ Ниже</button>
+          </form>
+
+          <!-- Скрыть / показать -->
+          <form method="post" action="{{ url_for('admin.categories') }}" class="admin-inline-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <input type="hidden" name="action" value="hide">
+            <input type="hidden" name="category_id" value="{{ c.id }}">
+            <input type="hidden" name="hide" value="{% if c.is_hidden %}0{% else %}1{% endif %}">
+            <button type="submit" class="admin-btn admin-btn-small admin-btn-warn">
+              {% if c.is_hidden %}Показать{% else %}Скрыть{% endif %}
+            </button>
+          </form>
+
+          <!-- Удаление: если в категории есть схемы, сначала спросим,
+               куда их перенести -->
+          <form method="post" action="{{ url_for('admin.categories') }}"
+                class="admin-inline-form admin-cat-delete"
+                data-has-patterns="{{ counts.get(c.id, 0) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <input type="hidden" name="action" value="delete">
+            <input type="hidden" name="category_id" value="{{ c.id }}">
+            {% if counts.get(c.id, 0) %}
+              <label class="admin-visually-hidden" for="move-to-{{ c.id }}">
+                Куда перенести схемы из категории «{{ c.name }}»
+              </label>
+              <select name="move_to" id="move-to-{{ c.id }}">
+                <option value="">— перенести схемы в... —</option>
+                {% for other in categories if other.id != c.id %}
+                  <option value="{{ other.id }}">{{ other.name }}</option>
+                {% endfor %}
+              </select>
+            {% endif %}
+            <button type="submit" class="admin-btn admin-btn-small admin-btn-danger js-confirm"
+                    data-confirm="Удалить категорию «{{ c.name }}»? Её можно будет восстановить.">
+              Удалить
+            </button>
+          </form>
+        </div>
+
+      </li>
+      {% endfor %}
+    </ul>
+
+    <p class="admin-field-hint">
+      Категория со схемами не удалится, пока вы не выберете, куда эти схемы
+      перенести, — так ни одна схема не потеряет свою категорию случайно.
+    </p>
+  {% endif %}
+</section>
+
+{% endblock %}

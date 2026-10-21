@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}Мои отшивы — {{ brand_name }}{% endblock %}
+
+{% block content %}
+
+<section class="account-page">
+  <div class="container">
+
+    <header class="account-head reveal">
+      <h1 class="account-title">Мои отшивы</h1>
+      <p class="account-lead">
+        Поделитесь готовой работой — она появится в галерее «Хвастики без
+        скромности» после проверки.
+      </p>
+    </header>
+
+    {% include "account/_nav.html" %}
+
+    <!-- ==================== ФОРМА «ПОДЕЛИТЬСЯ ОТШИВОМ» ==================== -->
+    <section class="account-card reveal" id="share">
+      <h2 class="account-subtitle">Поделиться отшивом</h2>
+
+      <form method="post" enctype="multipart/form-data" class="account-form"
+            action="{{ url_for('users.projects') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+        <div class="form-field">
+          <label for="pattern_id">Схема <span class="form-req">*</span></label>
+          <select id="pattern_id" name="pattern_id"
+                  {% if errors.pattern_id %}aria-invalid="true"{% endif %}>
+            <option value="">— выберите схему —</option>
+            {% for pattern in patterns %}
+              <option value="{{ pattern.id }}"
+                {% if values.pattern_id == pattern.id %}selected{% endif %}>
+                {{ pattern.title }}
+              </option>
+            {% endfor %}
+          </select>
+          {% if errors.pattern_id %}<p class="form-error">{{ errors.pattern_id }}</p>{% endif %}
+          <p class="form-hint">Не обязательно покупать схему на сайте — выберите ту, по которой вышивали.</p>
+        </div>
+
+        <div class="form-field">
+          <label for="photos">Фотографии работы (от 1 до {{ max_images }}) <span class="form-req">*</span></label>
+          <input type="file" id="photos" name="photos" accept="image/jpeg,image/png,image/webp"
+                 multiple {% if errors.photos %}aria-invalid="true"{% endif %}>
+          {% if errors.photos %}<p class="form-error">{{ errors.photos }}</p>{% endif %}
+          <p class="form-hint">JPG, PNG или WEBP. Мы уберём лишние данные и покажем аккуратную копию.</p>
+        </div>
+
+        <div class="form-field">
+          <label for="story">Рассказ о работе <span class="form-req">*</span></label>
+          <textarea id="story" name="story" rows="5"
+                    placeholder="Как проходил процесс, что было интересно, какие ткани и нитки использовали"
+                    {% if errors.story %}aria-invalid="true"{% endif %}>{{ values.story or '' }}</textarea>
+          {% if errors.story %}<p class="form-error">{{ errors.story }}</p>{% endif %}
+        </div>
+
+        <div class="form-field">
+          <label for="display_name">Имя для подписи <span class="form-req">*</span></label>
+          <input type="text" id="display_name" name="display_name"
+                 value="{{ values.display_name or current_user.display_name }}"
+                 {% if errors.display_name %}aria-invalid="true"{% endif %}>
+          {% if errors.display_name %}<p class="form-error">{{ errors.display_name }}</p>{% endif %}
+          <p class="form-hint">Так подписана работа в галерее. Почта и другие данные не публикуются.</p>
+        </div>
+
+        <label class="form-check">
+          <input type="checkbox" name="owns_photos" value="1">
+          <span>Подтверждаю, что эти фотографии мои или у меня есть право их публиковать.</span>
+        </label>
+        {% if errors.owns_photos %}<p class="form-error">{{ errors.owns_photos }}</p>{% endif %}
+
+        <label class="form-check">
+          <input type="checkbox" name="publish_consent" value="1">
+          <span>Согласен(на) на публикацию фотографий и указанного имени на сайте.</span>
+        </label>
+        {% if errors.publish_consent %}<p class="form-error">{{ errors.publish_consent }}</p>{% endif %}
+
+        <button type="submit" class="btn btn-primary btn-lg account-submit">
+          Отправить на проверку
+        </button>
+      </form>
+    </section>
+
+    <!-- ==================== СПИСОК МОИХ РАБОТ ==================== -->
+    <section class="account-section reveal">
+      <h2 class="account-subtitle">Отправленные работы</h2>
+
+      {% if projects %}
+        <div class="project-list">
+          {% for project in projects %}
+            <article class="project-row">
+              <div class="project-row-body">
+                <p class="project-row-title">{{ project.pattern_title or 'Схема' }}</p>
+                <p class="project-row-date">{{ project.created_at | date_ru }}</p>
+                <span class="status-badge status-{{ project.status }}">
+                  {% if project.status == 'pending' %}Ожидает проверки
+                  {% elif project.status == 'approved' %}Опубликовано
+                  {% elif project.status == 'rejected' %}Отклонено
+                  {% elif project.status == 'hidden' %}Скрыто
+                  {% elif project.status == 'withdrawn' %}Согласие отозвано
+                  {% else %}{{ project.status }}{% endif %}
+                </span>
+                {% if project.moderation_note %}
+                  <p class="project-row-note">Причина: {{ project.moderation_note }}</p>
+                {% endif %}
+              </div>
+
+              {% if project.status in ['approved', 'hidden'] %}
+                <form method="post" action="{{ url_for('users.projects') }}"
+                      class="project-withdraw">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                  <input type="hidden" name="action" value="withdraw">
+                  <input type="hidden" name="project_id" value="{{ project.id }}">
+                  <button type="submit" class="btn btn-ghost btn-sm">
+                    Отозвать согласие на публикацию
+                  </button>
+                </form>
+              {% endif %}
+            </article>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="account-note">Вы ещё не отправляли отшивов.</p>
+      {% endif %}
+    </section>
+
+  </div>
+</section>
+
+{% endblock %}

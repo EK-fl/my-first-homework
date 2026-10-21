@@ -1,0 +1,179 @@
+{% extends "admin/base.html" %}
+{% block title %}Библиотека и права доступа{% endblock %}
+
+{% block content %}
+
+<div class="admin-page-head">
+  <div>
+    <h1 class="admin-page-title">Библиотека и права доступа</h1>
+    <p class="admin-page-sub">
+      Здесь выдаются права на скачивание схем. Добавление схемы в корзину
+      само по себе ничего не открывает — доступ выдаёт только администратор.
+    </p>
+  </div>
+</div>
+
+<!-- ==================== ВЫДАЧА ПРАВА ==================== -->
+<section class="admin-card">
+  <h2 class="admin-card-title">Выдать доступ</h2>
+
+  {% if not users %}
+    <p class="admin-empty">
+      Покупателей пока нет — сначала кто-то должен зарегистрироваться на сайте.
+    </p>
+  {% else %}
+  <form method="post" action="{{ url_for('admin.entitlements') }}" class="admin-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <input type="hidden" name="action" value="grant">
+
+    <div class="admin-field">
+      <label for="user_id">Покупатель <span class="admin-req">*</span></label>
+      <select id="user_id" name="user_id" required>
+        <option value="">— выберите покупателя —</option>
+        {% for u in users %}
+          <option value="{{ u.id }}">{{ u.name or u.email }} ({{ u.email }})</option>
+        {% endfor %}
+      </select>
+      {% if errors.user_id %}<p class="admin-error">{{ errors.user_id }}</p>{% endif %}
+    </div>
+
+    <div class="admin-field">
+      <label>Схемы <span class="admin-req">*</span></label>
+      <div class="admin-check-grid">
+        {% for p in patterns %}
+          <label class="admin-check">
+            <input type="checkbox" name="pattern_ids" value="{{ p.id }}">
+            <span>{{ p.title }}</span>
+          </label>
+        {% endfor %}
+      </div>
+      {% if errors.pattern_ids %}<p class="admin-error">{{ errors.pattern_ids }}</p>{% endif %}
+    </div>
+
+    <div class="admin-field">
+      <label for="note">Комментарий</label>
+      <input type="text" id="note" name="note"
+             placeholder="Например: покупка на другой площадке, 12.03">
+    </div>
+
+    <label class="admin-check">
+      <input type="checkbox" name="make_order" value="1">
+      <span>Внести заказ вручную (появится в истории покупок покупателя)</span>
+    </label>
+
+    <button type="submit" class="admin-btn admin-btn-primary">Выдать доступ</button>
+  </form>
+  {% endif %}
+</section>
+
+<!-- ==================== ФАЙЛЫ СХЕМ ==================== -->
+<section class="admin-card">
+  <h2 class="admin-card-title">Файлы схем (PDF, Saga, Paradise)</h2>
+  <p class="admin-card-sub">
+    Файлы хранятся вне публичной папки: скачать их можно только с правом
+    доступа. Выберите схему, чтобы загрузить или удалить её файлы.
+  </p>
+  <ul class="admin-simple-list">
+    {% for p in patterns %}
+      <li>
+        <span>{{ p.title }}</span>
+        <a href="{{ url_for('admin.pattern_files', pattern_id=p.id) }}"
+           class="admin-btn admin-btn-small admin-btn-outline">Файлы схемы</a>
+      </li>
+    {% endfor %}
+  </ul>
+</section>
+
+<!-- ==================== СПИСОК ПРАВ ==================== -->
+<section class="admin-card">
+  <h2 class="admin-card-title">Все права доступа</h2>
+
+  <form method="get" action="{{ url_for('admin.entitlements') }}" class="admin-search-form">
+    <label class="admin-visually-hidden" for="ent-search">Поиск</label>
+    <input type="search" id="ent-search" name="q" value="{{ search }}"
+           placeholder="Покупатель или схема">
+    <button type="submit" class="admin-btn admin-btn-outline">Найти</button>
+  </form>
+
+  {% if not entitlements %}
+    <p class="admin-empty">Права пока никому не выданы.</p>
+  {% else %}
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Покупатель</th>
+            <th>Схема</th>
+            <th>Выдано</th>
+            <th>Состояние</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for e in entitlements %}
+            <tr>
+              <td>{{ e.user_name or e.user_email or '—' }}</td>
+              <td>{{ e.pattern_title or '—' }}</td>
+              <td>{{ e.granted_at | date_ru }}</td>
+              <td>
+                {% if e.revoked_at %}
+                  <span class="admin-badge admin-badge-draft">Отозвано</span>
+                {% else %}
+                  <span class="admin-badge admin-badge-published">Действует</span>
+                {% endif %}
+              </td>
+              <td class="admin-cell-actions">
+                {% if not e.revoked_at %}
+                  <form method="post" action="{{ url_for('admin.entitlements') }}" class="admin-inline-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <input type="hidden" name="action" value="revoke">
+                    <input type="hidden" name="user_id" value="{{ e.user_id }}">
+                    <input type="hidden" name="pattern_id" value="{{ e.pattern_id }}">
+                    <button type="submit" class="admin-btn admin-btn-small admin-btn-danger">Отозвать</button>
+                  </form>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+</section>
+
+<!-- ==================== ЗАКАЗЫ ==================== -->
+<section class="admin-card">
+  <h2 class="admin-card-title">Заказы (внесённые вручную)</h2>
+  <p class="admin-card-sub">
+    Онлайн-продажи пока не подключены. Здесь видны заказы, которые
+    администратор внёс сам — например, покупки на других площадках.
+  </p>
+  {% if not orders %}
+    <p class="admin-empty">Заказов пока нет.</p>
+  {% else %}
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr><th>Номер</th><th>Покупатель</th><th>Позиции</th><th>Сумма</th><th>Дата</th></tr>
+        </thead>
+        <tbody>
+          {% for o in orders %}
+            <tr>
+              <td>{{ o.order_number }}</td>
+              <td>{{ o.user_name or o.user_email or '—' }}</td>
+              <td>
+                {% for item in o.order_items %}
+                  {{ item.title }}{% if not loop.last %}, {% endif %}
+                {% endfor %}
+              </td>
+              <td>{{ o.total | price }} ₽</td>
+              <td>{{ o.created_at | date_ru }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+</section>
+
+{% endblock %}

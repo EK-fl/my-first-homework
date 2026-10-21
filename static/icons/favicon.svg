@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Фавикон в фирменном стиле: крестик на молочном фоне -->
+  <rect width="64" height="64" rx="14" fill="#56645A"/>
+  <g fill="#F4F0E8">
+    <rect x="26" y="12" width="12" height="40" rx="2"/>
+    <rect x="12" y="26" width="40" height="12" rx="2"/>
+  </g>
+  <rect x="30" y="30" width="4" height="4" fill="#C4705A"/>
+</svg>

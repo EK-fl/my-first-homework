@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600" role="img" aria-label="Добавьте изображение схемы">
+  <rect width="800" height="600" fill="#EDE9E2"/>
+  <g stroke="#C9BBA8" stroke-width="1" opacity="0.45">
+    <line x1="66" y1="0" x2="66" y2="600"/>
+    <line x1="132" y1="0" x2="132" y2="600"/>
+    <line x1="198" y1="0" x2="198" y2="600"/>
+    <line x1="264" y1="0" x2="264" y2="600"/>
+    <line x1="330" y1="0" x2="330" y2="600"/>
+    <line x1="396" y1="0" x2="396" y2="600"/>
+    <line x1="462" y1="0" x2="462" y2="600"/>
+    <line x1="528" y1="0" x2="528" y2="600"/>
+    <line x1="594" y1="0" x2="594" y2="600"/>
+    <line x1="660" y1="0" x2="660" y2="600"/>
+    <line x1="726" y1="0" x2="726" y2="600"/>
+    <line x1="792" y1="0" x2="792" y2="600"/>
+    <line x1="0" y1="66" x2="800" y2="66"/>
+    <line x1="0" y1="132" x2="800" y2="132"/>
+    <line x1="0" y1="198" x2="800" y2="198"/>
+    <line x1="0" y1="264" x2="800" y2="264"/>
+    <line x1="0" y1="330" x2="800" y2="330"/>
+    <line x1="0" y1="396" x2="800" y2="396"/>
+    <line x1="0" y1="462" x2="800" y2="462"/>
+    <line x1="0" y1="528" x2="800" y2="528"/>
+    <line x1="0" y1="594" x2="800" y2="594"/>
+  </g>
+  <g fill="#C9BBA8" opacity="0.65">
+    <rect x="390" y="252" width="20" height="60"/>
+    <rect x="370" y="272" width="60" height="20"/>
+  </g>
+  <text x="400" y="390.0" text-anchor="middle" font-family="Segoe UI, Manrope, Arial, sans-serif" font-size="33" fill="#6A4C3E" opacity="0.8">Добавьте изображение схемы</text>
+  <text x="400" y="432.0" text-anchor="middle" font-family="Segoe UI, Manrope, Arial, sans-serif" font-size="25" fill="#6A4C3E" opacity="0.55">demo-fonar</text>
+</svg>

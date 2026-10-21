@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}Написать отзыв — {{ brand_name }}{% endblock %}
+
+{% block content %}
+
+<section class="account-page">
+  <div class="container account-narrow">
+
+    <header class="account-head reveal">
+      <h1 class="account-title">Написать отзыв</h1>
+      <p class="account-lead">
+        Отзыв появится на сайте после проверки. Мы рады и добрым словам,
+        и честной критике — она помогает стать лучше.
+      </p>
+    </header>
+
+    {% if not current_user.email_confirmed %}
+      <div class="account-card reveal">
+        <p class="account-alert">
+          Чтобы оставить отзыв, подтвердите электронную почту в
+          <a href="{{ url_for('users.settings') }}">настройках профиля</a>.
+        </p>
+      </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data" class="account-form reveal"
+          action="{{ url_for('users.write_review') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+      <div class="form-field">
+        <label>Категория отзыва <span class="form-req">*</span></label>
+        <div class="form-radio-group">
+          {% for value, label in categories %}
+            <label class="form-radio">
+              <input type="radio" name="category" value="{{ value }}"
+                     {% if values.category == value %}checked{% endif %}>
+              <span>{{ label }}</span>
+            </label>
+          {% endfor %}
+        </div>
+        {% if errors.category %}<p class="form-error">{{ errors.category }}</p>{% endif %}
+      </div>
+
+      <div class="form-field">
+        <label for="pattern_id">Схема (если отзыв о конкретной работе)</label>
+        <select id="pattern_id" name="pattern_id"
+                {% if errors.pattern_id %}aria-invalid="true"{% endif %}>
+          <option value="">— не выбрана —</option>
+          {% for pattern in patterns %}
+            <option value="{{ pattern.id }}"
+              {% if values.pattern_id == pattern.id | string %}selected{% endif %}>
+              {{ pattern.title }}
+            </option>
+          {% endfor %}
+        </select>
+        {% if errors.pattern_id %}<p class="form-error">{{ errors.pattern_id }}</p>{% endif %}
+      </div>
+
+      <div class="form-field">
+        <label>Оценка <span class="form-req">*</span></label>
+        <div class="rating-input" role="radiogroup" aria-label="Оценка от 1 до 5">
+          {% for i in range(5, 0, -1) %}
+            <input type="radio" id="rating-{{ i }}" name="rating" value="{{ i }}"
+                   {% if values.rating == i | string %}checked{% endif %}>
+            <label for="rating-{{ i }}" title="{{ i }} из 5">★</label>
+          {% endfor %}
+        </div>
+        {% if errors.rating %}<p class="form-error">{{ errors.rating }}</p>{% endif %}
+      </div>
+
+      <div class="form-field">
+        <label for="text">Текст отзыва <span class="form-req">*</span></label>
+        <textarea id="text" name="text" rows="6"
+                  placeholder="Что понравилось, что было удобно или сложно"
+                  {% if errors.text %}aria-invalid="true"{% endif %}>{{ values.text or '' }}</textarea>
+        {% if errors.text %}<p class="form-error">{{ errors.text }}</p>{% endif %}
+      </div>
+
+      <div class="form-field">
+        <label for="photo">Фотография (необязательно)</label>
+        <input type="file" id="photo" name="photo" accept="image/jpeg,image/png,image/webp"
+               {% if errors.photo %}aria-invalid="true"{% endif %}>
+        {% if errors.photo %}<p class="form-error">{{ errors.photo }}</p>{% endif %}
+      </div>
+
+      <div class="form-field">
+        <label for="display_name">Имя для подписи <span class="form-req">*</span></label>
+        <input type="text" id="display_name" name="display_name"
+               value="{{ values.display_name or display_name }}"
+               {% if errors.display_name %}aria-invalid="true"{% endif %}>
+        {% if errors.display_name %}<p class="form-error">{{ errors.display_name }}</p>{% endif %}
+        <p class="form-hint">Почта и другие личные данные не публикуются.</p>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-lg account-submit">
+        Отправить отзыв
+      </button>
+    </form>
+
+  </div>
+</section>
+
+{% endblock %}

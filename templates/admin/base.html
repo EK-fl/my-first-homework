@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<!--
+  admin/base.html — общий каркас всех страниц административной панели.
+
+  Отличия от публичной части сайта:
+  * своя шапка с названием панели и кнопкой выхода;
+  * боковое меню на компьютере, компактная навигация на телефоне;
+  * свои стили — static/css/admin.css.
+-->
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Административная панель{% endblock %} — {{ brand_name }}</title>
+  <meta name="robots" content="noindex, nofollow">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='icons/favicon.svg') }}">
+</head>
+<body class="admin-body">
+
+<!-- ============================ ШАПКА ПАНЕЛИ ============================ -->
+<header class="admin-header">
+  <div class="admin-header-inner">
+
+    <a href="{{ url_for('admin.dashboard') }}" class="admin-brand">
+      <span class="admin-brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="26" height="26">
+          <path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6z" fill="currentColor"/>
+        </svg>
+      </span>
+      <span class="admin-brand-text">
+        <span class="admin-brand-name">Панель управления</span>
+        <span class="admin-brand-sub">{{ brand_name }}</span>
+      </span>
+    </a>
+
+    <div class="admin-header-actions">
+      <!-- Кнопка мобильного меню: видна только на маленьких экранах -->
+      <button type="button" class="admin-menu-toggle" id="admin-menu-toggle"
+              aria-expanded="false" aria-controls="admin-nav" aria-label="Открыть меню">
+        <span></span><span></span><span></span>
+      </button>
+
+      <a href="{{ url_for('index') }}" class="admin-link-site" target="_blank" rel="noopener">
+        Открыть сайт ↗
+      </a>
+
+      {% if admin_user %}
+      <span class="admin-user" title="Вы вошли как {{ admin_user.username }}">
+        {{ admin_user.username }}
+      </span>
+      <!-- Выход оформлен формой: это защищает от случайного выхода по ссылке -->
+      <form method="post" action="{{ url_for('admin.logout') }}" class="admin-logout-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <button type="submit" class="admin-logout">Выйти</button>
+      </form>
+      {% endif %}
+    </div>
+
+  </div>
+</header>
+
+<div class="admin-layout">
+
+  <!-- ============================ БОКОВОЕ МЕНЮ ============================ -->
+  <nav class="admin-nav" id="admin-nav" aria-label="Разделы панели управления">
+    {% for endpoint, label, icon in admin_nav %}
+      <a href="{{ url_for(endpoint) }}"
+         class="admin-nav-link {% if request.endpoint == endpoint or (endpoint == 'admin.patterns' and request.endpoint in ['admin.pattern_edit', 'admin.pattern_preview']) or (endpoint == 'admin.projects' and request.endpoint == 'admin.project_photo') or (endpoint == 'admin.users' and request.endpoint in ['admin.user_detail']) %}is-active{% endif %}">
+        <span class="admin-nav-icon" aria-hidden="true">{{ icon_svg(icon) }}</span>
+        <span>{{ label }}</span>
+        {# Счётчик того, что ждёт проверки: отшивы и отзывы #}
+        {% if endpoint == 'admin.projects' and pending_counts.projects %}
+          <span class="admin-nav-count">{{ pending_counts.projects }}</span>
+        {% elif endpoint == 'admin.reviews' and pending_counts.reviews %}
+          <span class="admin-nav-count">{{ pending_counts.reviews }}</span>
+        {% endif %}
+      </a>
+    {% endfor %}
+
+    <a href="{{ url_for('admin.backups') }}"
+       class="admin-nav-link {% if request.endpoint == 'admin.backups' %}is-active{% endif %}">
+      <span class="admin-nav-icon" aria-hidden="true">{{ icon_svg('shield') }}</span>
+      <span>Резервные копии</span>
+    </a>
+
+    <a href="{{ url_for('index') }}" class="admin-nav-link admin-nav-link-out">
+      <span class="admin-nav-icon" aria-hidden="true">{{ icon_svg('eye') }}</span>
+      <span>Публичный сайт</span>
+    </a>
+  </nav>
+
+  <!-- ============================ СОДЕРЖИМОЕ ============================ -->
+  <main class="admin-main">
+
+    <!-- Сообщения об успехе и ошибках -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="admin-flashes">
+          {% for category, message in messages %}
+            <p class="admin-flash admin-flash-{{ category }}" role="status">{{ message }}</p>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+</div>
+
+<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+{% block scripts %}{% endblock %}
+
+</body>
+</html>

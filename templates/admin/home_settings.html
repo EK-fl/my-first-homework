@@ -1,0 +1,155 @@
+{% extends "admin/base.html" %}
+{% block title %}Настройки главной страницы{% endblock %}
+
+{% block content %}
+
+<div class="admin-page-head">
+  <div>
+    <h1 class="admin-page-title">Настройки главной страницы</h1>
+    <p class="admin-page-sub">
+      Заголовки галереи и блока отзывов, количество элементов на главной
+      и фирменные изображения.
+    </p>
+  </div>
+  <a href="{{ url_for('index') }}" class="admin-btn admin-btn-ghost" target="_blank" rel="noopener">
+    Посмотреть сайт ↗
+  </a>
+</div>
+
+<form method="post" action="{{ url_for('admin.home_settings') }}" class="admin-form">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+  <!-- ==================== ФИРМЕННЫЕ ИЗОБРАЖЕНИЯ ==================== -->
+  <section class="admin-card admin-form-section">
+    <h2 class="admin-card-title">Фирменные изображения</h2>
+    <p class="admin-card-sub">
+      Аватар сообщества — отдельный файл, который показывается крупно в
+      блоке заголовка на первом экране. Сайт показывает его как есть:
+      не перерисовывает, не обрезает и не перекрашивает.
+      Оригинальный логотип (ехидна) хранится здесь же — на первом экране
+      он сейчас не выводится.
+      Чтобы заменить изображение, положите новый файл в папку
+      <code>static/images/brand/</code> и укажите его имя ниже.
+    </p>
+
+    <div class="admin-brand-preview">
+      <div class="admin-brand-item">
+        <p class="admin-label">Логотип (ехидна)</p>
+        {% if logo_url %}
+          <img src="{{ url_for('static', filename=logo_url) }}" alt="Логотип" class="admin-brand-image">
+        {% else %}
+          <p class="admin-empty">
+            Оригинальный логотип не найден. Загрузите файл
+            <code>logo.jpg</code> в папку <code>static/images/brand/</code>.
+          </p>
+        {% endif %}
+      </div>
+
+      <div class="admin-brand-item">
+        <p class="admin-label">Аватар сообщества</p>
+        {% if avatar_url %}
+          <img src="{{ url_for('static', filename=avatar_url) }}" alt="Аватар сообщества" class="admin-brand-image">
+        {% else %}
+          <p class="admin-empty">
+            Аватар сообщества не найден. Загрузите файл
+            <code>community-avatar.png</code> в папку <code>static/images/brand/</code>.
+          </p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="admin-field">
+      <label for="brand_logo_file">Имя файла логотипа</label>
+      <input type="text" id="brand_logo_file" name="brand_logo_file"
+             value="{{ settings.brand_logo_file }}"
+             placeholder="logo.jpg">
+      <p class="admin-hint">Если поле пустое, берётся файл logo.jpg (или logo.png).</p>
+      {% if errors.brand_logo_file %}<p class="admin-error">{{ errors.brand_logo_file }}</p>{% endif %}
+    </div>
+
+    <div class="admin-field">
+      <label for="brand_avatar_file">Имя файла аватара</label>
+      <input type="text" id="brand_avatar_file" name="brand_avatar_file"
+             value="{{ settings.brand_avatar_file }}"
+             placeholder="community-avatar.png">
+      <p class="admin-hint">Если поле пустое, берётся файл community-avatar.png.</p>
+      {% if errors.brand_avatar_file %}<p class="admin-error">{{ errors.brand_avatar_file }}</p>{% endif %}
+    </div>
+
+    <div class="admin-field">
+      <label for="brand_avatar_caption">Подпись к аватару сообщества</label>
+      <input type="text" id="brand_avatar_caption" name="brand_avatar_caption"
+             value="{{ settings.brand_avatar_caption }}">
+      <p class="admin-hint">
+        Сейчас не выводится на сайте: в блоке заголовка показывается только
+        сам аватар, без текста рядом.
+      </p>
+    </div>
+  </section>
+
+  <!-- ==================== ГАЛЕРЕЯ ==================== -->
+  <section class="admin-card admin-form-section">
+    <h2 class="admin-card-title">Галерея «Хвастики без скромности»</h2>
+
+    <div class="admin-field">
+      <label for="gallery_title">Заголовок</label>
+      <input type="text" id="gallery_title" name="gallery_title"
+             value="{{ settings.gallery_title }}">
+    </div>
+
+    <div class="admin-field">
+      <label for="gallery_subtitle">Подзаголовок</label>
+      <input type="text" id="gallery_subtitle" name="gallery_subtitle"
+             value="{{ settings.gallery_subtitle }}">
+    </div>
+
+    <div class="admin-field">
+      <label for="gallery_home_count">Сколько работ показывать на главной</label>
+      <input type="number" id="gallery_home_count" name="gallery_home_count"
+             value="{{ settings.gallery_home_count }}" min="0" max="24">
+      {% if errors.gallery_home_count %}<p class="admin-error">{{ errors.gallery_home_count }}</p>{% endif %}
+    </div>
+
+    <div class="admin-field">
+      <label for="gallery_empty_message">Текст, когда работ пока нет</label>
+      <textarea id="gallery_empty_message" name="gallery_empty_message" rows="3">{{ settings.gallery_empty_message }}</textarea>
+    </div>
+  </section>
+
+  <!-- ==================== ОТЗЫВЫ ==================== -->
+  <section class="admin-card admin-form-section">
+    <h2 class="admin-card-title">Блок «Ваши впечатления»</h2>
+
+    <div class="admin-field">
+      <label for="reviews_title">Заголовок</label>
+      <input type="text" id="reviews_title" name="reviews_title"
+             value="{{ settings.reviews_title }}">
+    </div>
+
+    <div class="admin-field">
+      <label for="reviews_subtitle">Подзаголовок</label>
+      <input type="text" id="reviews_subtitle" name="reviews_subtitle"
+             value="{{ settings.reviews_subtitle }}">
+    </div>
+
+    <div class="admin-field">
+      <label for="reviews_home_count">Сколько отзывов показывать на главной</label>
+      <input type="number" id="reviews_home_count" name="reviews_home_count"
+             value="{{ settings.reviews_home_count }}" min="0" max="12">
+      {% if errors.reviews_home_count %}<p class="admin-error">{{ errors.reviews_home_count }}</p>{% endif %}
+    </div>
+
+    <div class="admin-field">
+      <label for="reviews_empty_message">Текст, когда отзывов пока нет</label>
+      <textarea id="reviews_empty_message" name="reviews_empty_message" rows="3">{{ settings.reviews_empty_message }}</textarea>
+    </div>
+  </section>
+
+  <div class="admin-form-actions">
+    <button type="submit" class="admin-btn admin-btn-primary">Сохранить</button>
+    <a href="{{ url_for('admin.dashboard') }}" class="admin-btn admin-btn-ghost">Отмена</a>
+  </div>
+
+</form>
+
+{% endblock %}

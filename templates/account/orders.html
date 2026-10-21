@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Мои заказы — {{ brand_name }}{% endblock %}
+
+{% block content %}
+
+<section class="account-page">
+  <div class="container">
+
+    <header class="account-head reveal">
+      <h1 class="account-title">Мои заказы</h1>
+      <p class="account-lead">
+        Здесь хранится история ваших покупок. Онлайн-оформление заказов
+        появится позже, а покупки, сделанные ранее, мы вносим вручную.
+      </p>
+    </header>
+
+    {% include "account/_nav.html" %}
+
+    {% if orders %}
+      <div class="orders-list">
+        {% for order in orders %}
+          <article class="order-card reveal">
+            <div class="order-head">
+              <p class="order-number">Заказ {{ order.order_number }}</p>
+              <p class="order-date">{{ order.created_at | date_ru }}</p>
+            </div>
+
+            <ul class="order-items">
+              {% for item in order.order_items %}
+                <li>
+                  <span class="order-item-title">{{ item.title }}</span>
+                  <span class="order-item-price">{{ item.price | price }}&nbsp;₽</span>
+                </li>
+              {% endfor %}
+            </ul>
+
+            <div class="order-foot">
+              <span class="order-status order-status-{{ order.status }}">
+                {% if order.status == 'manual' %}Внесён вручную
+                {% elif order.status == 'paid' %}Оплачен
+                {% elif order.status == 'cancelled' %}Отменён
+                {% else %}{{ order.status }}{% endif %}
+              </span>
+              <span class="order-total">Итого: {{ order.total | price }}&nbsp;₽</span>
+            </div>
+
+            {% if order.note %}
+              <p class="order-note">{{ order.note }}</p>
+            {% endif %}
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="account-empty reveal">
+        <p class="account-empty-title">Заказов пока нет</p>
+        <p class="account-empty-text">
+          Когда появится онлайн-оформление, покупки будут появляться здесь
+          автоматически.
+        </p>
+      </div>
+    {% endif %}
+
+  </div>
+</section>
+
+{% endblock %}

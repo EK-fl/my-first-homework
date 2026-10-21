@@ -1,0 +1,199 @@
+{% extends "admin/base.html" %}
+{% block title %}Главная{% endblock %}
+
+{% block content %}
+
+<div class="admin-page-head">
+  <div>
+    <h1 class="admin-page-title">Главная</h1>
+    <p class="admin-page-sub">
+      Коротко о том, что сейчас происходит с сайтом.
+    </p>
+  </div>
+  <a href="{{ url_for('admin.pattern_new') }}" class="admin-btn admin-btn-primary admin-btn-lg">
+    + Добавить схему
+  </a>
+</div>
+
+<!-- ==================== КАРТОЧКИ СО СВОДКОЙ ==================== -->
+<div class="admin-stats">
+
+  <article class="admin-stat admin-stat-terracotta">
+    <p class="admin-stat-value">{{ total }}</p>
+    <p class="admin-stat-label">Всего схем</p>
+    <p class="admin-stat-note">в том числе черновики</p>
+  </article>
+
+  <article class="admin-stat admin-stat-pine">
+    <p class="admin-stat-value">{{ published }}</p>
+    <p class="admin-stat-label">Опубликовано</p>
+    <p class="admin-stat-note">видны покупателям</p>
+  </article>
+
+  <article class="admin-stat admin-stat-hydrangea">
+    <p class="admin-stat-value">{{ drafts }}</p>
+    <p class="admin-stat-label">Черновики</p>
+    <p class="admin-stat-note">видите только вы</p>
+  </article>
+
+  <article class="admin-stat admin-stat-eucalyptus">
+    <p class="admin-stat-value">{{ categories_total }}</p>
+    <p class="admin-stat-label">Категорий</p>
+    <p class="admin-stat-note">для каталога</p>
+  </article>
+
+  <article class="admin-stat admin-stat-hydrangea">
+    <p class="admin-stat-value">{{ users_total }}</p>
+    <p class="admin-stat-label">Покупателей</p>
+    <p class="admin-stat-note">
+      <a href="{{ url_for('admin.users') }}" class="admin-link">Открыть →</a>
+    </p>
+  </article>
+
+  <article class="admin-stat admin-stat-pine">
+    <p class="admin-stat-value">{{ projects_status.pending }}</p>
+    <p class="admin-stat-label">Отшивов на проверке</p>
+    <p class="admin-stat-note">
+      <a href="{{ url_for('admin.projects') }}" class="admin-link">Проверить →</a>
+    </p>
+  </article>
+
+  <article class="admin-stat admin-stat-terracotta">
+    <p class="admin-stat-value">{{ reviews_status.pending }}</p>
+    <p class="admin-stat-label">Отзывов на проверке</p>
+    <p class="admin-stat-note">
+      <a href="{{ url_for('admin.reviews') }}" class="admin-link">Проверить →</a>
+    </p>
+  </article>
+
+</div>
+
+<!-- ==================== ЖДЁТ ВАШЕГО РЕШЕНИЯ ==================== -->
+{% if pending_projects or pending_reviews %}
+<div class="admin-columns">
+  {% if pending_projects %}
+  <section class="admin-card">
+    <header class="admin-card-head">
+      <h2 class="admin-card-title">Отшивы ждут проверки</h2>
+      <a href="{{ url_for('admin.projects') }}" class="admin-link">Все →</a>
+    </header>
+    <ul class="admin-simple-list">
+      {% for project in pending_projects %}
+        <li>
+          <span>{{ project.pattern_title or 'Схема' }} — {{ project.display_name }}</span>
+          <span class="admin-cell-sub">{{ project.created_at | date_ru }}</span>
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  {% if pending_reviews %}
+  <section class="admin-card">
+    <header class="admin-card-head">
+      <h2 class="admin-card-title">Отзывы ждут проверки</h2>
+      <a href="{{ url_for('admin.reviews') }}" class="admin-link">Все →</a>
+    </header>
+    <ul class="admin-simple-list">
+      {% for review in pending_reviews %}
+        <li>
+          <span>★ {{ review.rating }} — {{ review.display_name }}</span>
+          <span class="admin-cell-sub">{{ review.text | truncate(60) }}</span>
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+</div>
+{% endif %}
+
+<div class="admin-columns">
+
+  <!-- ==================== НЕДАВНО ИЗМЕНЁННЫЕ ==================== -->
+  <section class="admin-card">
+    <header class="admin-card-head">
+      <h2 class="admin-card-title">Последние изменения</h2>
+      <a href="{{ url_for('admin.patterns') }}" class="admin-link">Все схемы →</a>
+    </header>
+
+    {% if recent %}
+      <ul class="admin-recent">
+        {% for p in recent %}
+        <li class="admin-recent-item">
+          <span class="admin-recent-thumb">
+            <img src="{{ url_for('static', filename=p.main_image or 'images/placeholders/no-image.svg') }}"
+                 alt="" loading="lazy">
+          </span>
+          <span class="admin-recent-info">
+            <a href="{{ url_for('admin.pattern_edit', pattern_id=p.id) }}" class="admin-recent-title">
+              {{ p.title }}
+            </a>
+            <span class="admin-recent-meta">
+              {{ p.category or 'Без категории' }} · {{ p.price | price }} ₽ ·
+              {% if p.is_published %}
+                <span class="admin-badge admin-badge-published">Опубликовано</span>
+              {% else %}
+                <span class="admin-badge admin-badge-draft">Черновик</span>
+              {% endif %}
+            </span>
+          </span>
+          <span class="admin-recent-date">{{ p.updated_at[:16] }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="admin-empty">
+        Схем пока нет. Начните с кнопки «Добавить схему».
+      </p>
+    {% endif %}
+  </section>
+
+  <!-- ==================== ПОЛЕЗНЫЕ ДЕЙСТВИЯ ==================== -->
+  <section class="admin-card">
+    <header class="admin-card-head">
+      <h2 class="admin-card-title">Полезное</h2>
+    </header>
+
+    <ul class="admin-quick">
+      <li>
+        <a href="{{ url_for('admin.pattern_new') }}" class="admin-quick-link">
+          <strong>Добавить новую схему</strong>
+          <span>Заполните карточку, загрузите фото и опубликуйте.</span>
+        </a>
+      </li>
+      <li>
+        <a href="{{ url_for('admin.categories') }}" class="admin-quick-link">
+          <strong>Навести порядок в категориях</strong>
+          <span>Добавить, переименовать, скрыть или изменить порядок.</span>
+        </a>
+      </li>
+      <li>
+        <a href="{{ url_for('admin.settings') }}" class="admin-quick-link">
+          <strong>Изменить тексты сайта</strong>
+          <span>Название, первый экран, «О проекте», логотип, контакты.</span>
+        </a>
+      </li>
+      <li>
+        <a href="{{ url_for('admin.backups') }}" class="admin-quick-link">
+          <strong>Сделать резервную копию</strong>
+          <span>Копия базы данных — на случай неприятностей.</span>
+        </a>
+      </li>
+    </ul>
+
+    {% if backups %}
+    <div class="admin-backup-mini">
+      <p class="admin-backup-mini-title">Последние копии базы</p>
+      {% for backup in backups %}
+        <p class="admin-backup-mini-row">
+          <span>{{ backup.created }}</span>
+          <span>{{ backup.size_kb }} КБ</span>
+        </p>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </section>
+
+</div>
+
+{% endblock %}

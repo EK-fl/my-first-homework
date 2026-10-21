@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Моя библиотека — {{ brand_name }}{% endblock %}
+
+{% block content %}
+
+<section class="account-page">
+  <div class="container">
+
+    <header class="account-head reveal">
+      <h1 class="account-title">Мои схемы</h1>
+      <p class="account-lead">
+        Здесь только те схемы, на которые у вас есть право скачивания.
+        Скачивать можно сколько угодно раз, пока действует доступ.
+      </p>
+    </header>
+
+    {% include "account/_nav.html" %}
+
+    {% if library %}
+      <div class="library-grid">
+        {% for item in library %}
+          <article class="library-card reveal">
+            <a class="library-cover" href="{{ url_for('pattern_page', slug=item.slug) }}">
+              <img src="{{ url_for('static', filename=item.main_image if item.main_image else 'images/placeholders/no-image.svg') }}"
+                   alt="Схема «{{ item.title }}»" loading="lazy" width="400" height="300">
+            </a>
+
+            <div class="library-body">
+              <h2 class="library-title">
+                <a href="{{ url_for('pattern_page', slug=item.slug) }}">{{ item.title }}</a>
+              </h2>
+              <p class="library-date">
+                Доступ открыт: {{ item.granted_at | date_ru }}
+              </p>
+
+              {% if item.pattern_deleted %}
+                <p class="library-warning">
+                  Схема снята с публикации, но доступ и файлы сохранены.
+                </p>
+              {% endif %}
+
+              {% if item.files %}
+                <ul class="library-files">
+                  {% for file in item.files %}
+                    <li class="library-file">
+                      <span class="library-format library-format-{{ file.format }}">
+                        {{ file.format | upper }}
+                      </span>
+                      <span class="library-file-title">{{ file.title or ('Схема в формате ' ~ file.format | upper) }}</span>
+                      <a class="btn btn-primary btn-sm"
+                         href="{{ url_for('users.download', file_id=file.id) }}">
+                        Скачать
+                      </a>
+                    </li>
+                  {% endfor %}
+                </ul>
+              {% else %}
+                <p class="library-empty-files">
+                  Файлы для скачивания ещё не добавлены. Мы сообщим, когда они появятся.
+                </p>
+              {% endif %}
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="account-empty reveal">
+        <p class="account-empty-title">В библиотеке пока пусто</p>
+        <p class="account-empty-text">
+          Право скачивания появляется после покупки схемы. Если вы уже
+          приобретали схему — напишите нам, и мы откроем доступ.
+        </p>
+        <a href="{{ url_for('index') }}#catalog" class="btn btn-primary">Выбрать схему</a>
+      </div>
+    {% endif %}
+
+  </div>
+</section>
+
+{% endblock %}

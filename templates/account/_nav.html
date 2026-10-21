@@ -1,0 +1,23 @@
+<!--
+  account/_nav.html — общее меню личного кабинета.
+  Подключается на всех страницах /account/*.
+-->
+<nav class="account-nav" aria-label="Разделы личного кабинета">
+  <a href="{{ url_for('users.account') }}"
+     class="account-nav-link {% if request.endpoint == 'users.account' %}is-active{% endif %}">Обзор</a>
+  <a href="{{ url_for('users.library') }}"
+     class="account-nav-link {% if request.endpoint == 'users.library' %}is-active{% endif %}">Мои схемы</a>
+  <a href="{{ url_for('users.orders') }}"
+     class="account-nav-link {% if request.endpoint == 'users.orders' %}is-active{% endif %}">Мои заказы</a>
+  <a href="{{ url_for('users.projects') }}"
+     class="account-nav-link {% if request.endpoint == 'users.projects' %}is-active{% endif %}">Мои отшивы</a>
+  <a href="{{ url_for('users.reviews') }}"
+     class="account-nav-link {% if request.endpoint in ['users.reviews', 'users.write_review'] %}is-active{% endif %}">Мои отзывы</a>
+  <a href="{{ url_for('users.settings') }}"
+     class="account-nav-link {% if request.endpoint == 'users.settings' %}is-active{% endif %}">Настройки</a>
+
+  <form method="post" action="{{ url_for('users.logout') }}" class="account-nav-logout">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <button type="submit" class="account-nav-link account-nav-out">Выйти</button>
+  </form>
+</nav>
